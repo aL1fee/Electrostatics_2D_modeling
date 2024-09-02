@@ -150,6 +150,8 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 	extern int vertsFromEFieldDensityOfLines;
 	extern float vectorLineLength;
 	extern bool arrowsOn;
+	extern bool colorOn;
+	extern glm::vec3 default_color;
 
 	std::vector<std::vector<glm::vec3>*>* ret = new std::vector<std::vector<glm::vec3>*>;
 
@@ -160,8 +162,10 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 	glm::mat4 rotationMatrix2 = glm::rotate(glm::mat4(1.0f), angle2, axisOfRot);
 	float arrowHeadSize = 100.0f;
 
-	for (int i = 0; i < efield->getSize(); i+= vertsFromEFieldDensityOfLines) {
-		for (int j = 0; j < efield->getSize(); j+= vertsFromEFieldDensityOfLines) {
+
+	int  lineDensityCorr = 11 - vertsFromEFieldDensityOfLines;
+	for (int i = 0; i < efield->getSize(); i+= lineDensityCorr) {
+		for (int j = 0; j < efield->getSize(); j+= lineDensityCorr) {
 			bool chargeAtLineOrigin = false;
 			for (int c = 0; c < charges->size(); c++) {
 				float newDist = Helper::vec3DistanceXY(charges->at(c)->getPosition() -
@@ -180,14 +184,23 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 			//std::cout << "newV: " << glm::to_string(glm::normalize(newV)) << std::endl;
 			fieldLine->push_back(pos);
 			//fieldLine->push_back(glm::vec3(.1f, .1f, .8f));
-			fieldLine->push_back(efield->getColorValAtInd(i, j));
+			
+			if (colorOn) {
+				fieldLine->push_back(efield->getColorValAtInd(i, j));
+			} else {
+				fieldLine->push_back(default_color);
+			}
 			//std::cout << "A1: " << glm::to_string(efield->getColorValAtInd(i, j)) << std::endl;
 
 			float vec_mag = length(newV);
 			float scaled_vec_mag = Helper::scaleVecMag(abs(vec_mag));
 			glm::vec3 newPos = pos + glm::normalize(newV) * vectorLineLength * scaled_vec_mag;
 			fieldLine->push_back(newPos);
-			fieldLine->push_back(efield->getColorValAtInd(i, j));
+			if (colorOn) {
+				fieldLine->push_back(efield->getColorValAtInd(i, j));
+			} else {
+				fieldLine->push_back(default_color);
+			}
 			
 			if (arrowsOn) {
 				glm::vec3 arrowHeadLeft = -(newPos - pos);
@@ -197,13 +210,32 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 				glm::vec3 rotatedHeadRight = glm::vec3(rotationMatrix2 * glm::vec4(arrowHeadRight, 1.0f));
 
 				fieldLine->push_back(newPos);
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
+				if (colorOn) {
+					fieldLine->push_back(efield->getColorValAtInd(i, j));
+				} else {
+					fieldLine->push_back(default_color);
+				}
 				fieldLine->push_back(newPos + glm::normalize(rotatedHeadLeft) / arrowHeadSize);
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
+				if (colorOn) {
+					fieldLine->push_back(efield->getColorValAtInd(i, j));
+				}
+				else {
+					fieldLine->push_back(default_color);
+				}
 				fieldLine->push_back(newPos);
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
+				if (colorOn) {
+					fieldLine->push_back(efield->getColorValAtInd(i, j));
+				}
+				else {
+					fieldLine->push_back(default_color);
+				}
 				fieldLine->push_back(newPos + glm::normalize(rotatedHeadRight) / arrowHeadSize);
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
+				if (colorOn) {
+					fieldLine->push_back(efield->getColorValAtInd(i, j));
+				}
+				else {
+					fieldLine->push_back(default_color);
+				}
 			}
 
 
@@ -371,7 +403,8 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 	extern int testNumOfLinesSegments;
 	extern int numberOfFieldlines;
 	extern bool fieldlineSharpRejectionAngleOn;
-
+	extern bool colorOn;
+	extern glm::vec3 default_color;
 
 	for (int i = 0; i < charges->size(); i++) {
 		for (int z = 0; z < charges->size(); z++) {
@@ -388,6 +421,12 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 			bool skipLine = false;
 			std::vector<glm::vec3>* fieldLine = new std::vector<glm::vec3>;
 			fieldLine->push_back(glm::vec3(currentCh->getPosition().x, currentCh->getPosition().y, currentCh->getPosition().z));
+			if (colorOn) {
+				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(currentCh->getPosition().x),
+					efield->determineIndFromNDCY(currentCh->getPosition().y)));
+			} else {
+				fieldLine->push_back(default_color);
+			}
 			testNumOfLinesSegments++;
 			usedAngle = theta + j * deltaAngle;
 
@@ -420,6 +459,11 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 			extern bool testChargeCalcUnity;
 
 			fieldLine->push_back(segment);
+			if (colorOn) {
+				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(segment.x), efield->determineIndFromNDCY(segment.y)));
+			} else {
+				fieldLine->push_back(default_color);
+			}
 			testNumOfLinesSegments++;
 			for (int k = 0; k < FIELDLINE_NUMBER_OF_SEGMENTS; k++) {
 				glm::vec3 resultVector = glm::vec3(.0f);
@@ -482,6 +526,12 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 				}
 
 				fieldLine->push_back(segment);
+				if (colorOn) {
+					fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(segment.x), efield->determineIndFromNDCY(segment.y)));
+				} else {
+					fieldLine->push_back(default_color);
+				}
+
 				testNumOfLinesSegments++;
 			}
 			if (!skipLine) {
@@ -520,6 +570,7 @@ void PhysicalSystem::freeFieldLinesVerts(std::vector<std::vector<glm::vec3>*>* f
 
 std::vector<unsigned int>* PhysicalSystem::buildFieldLinesVAOs(std::vector<std::vector<glm::vec3>*>* fieldLines)
 {
+	//std::cout << "VAO size: " << fieldLines->size() << std::endl;
 	std::vector<unsigned int>* fieldLinesVAOs = new std::vector<unsigned int>();
 	for (int i = 0; i < fieldLines->size(); i++) {
 		unsigned int fieldLinesVAO;
@@ -528,13 +579,37 @@ std::vector<unsigned int>* PhysicalSystem::buildFieldLinesVAOs(std::vector<std::
 		unsigned int fieldLinesVBO;
 		glGenBuffers(1, &fieldLinesVBO);
 		glBindBuffer(GL_ARRAY_BUFFER, fieldLinesVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * (*fieldLines)[i]->size(), &(*(*fieldLines)[i])[0], GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		//std::cout << "Fieldline Size: " << fieldLines->at(i)->size() << std::endl;
+		//std::cout << "SEG: " << glm::to_string(*(fieldLines->at(i)->data())) << std::endl;
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * fieldLines->at(i)->size(), fieldLines->at(i)->data(), GL_DYNAMIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * (*fieldLines)[i]->size(), &(*(*fieldLines)[i])[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		//std::cout << "SA" << std::endl;
 		fieldLinesVAOs->push_back(fieldLinesVAO);
 	}
 	return fieldLinesVAOs;
 }
+
+//std::vector<unsigned int>* PhysicalSystem::buildFieldLinesVAOs(std::vector<std::vector<glm::vec3>*>* fieldLines)
+//{
+//	std::vector<unsigned int>* fieldLinesVAOs = new std::vector<unsigned int>();
+//	for (int i = 0; i < fieldLines->size(); i++) {
+//		unsigned int fieldLinesVAO;
+//		glGenVertexArrays(1, &fieldLinesVAO);
+//		glBindVertexArray(fieldLinesVAO);
+//		unsigned int fieldLinesVBO;
+//		glGenBuffers(1, &fieldLinesVBO);
+//		glBindBuffer(GL_ARRAY_BUFFER, fieldLinesVBO);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * (*fieldLines)[i]->size(), &(*(*fieldLines)[i])[0], GL_STATIC_DRAW);
+//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+//		glEnableVertexAttribArray(0);
+//		fieldLinesVAOs->push_back(fieldLinesVAO);
+//	}
+//	return fieldLinesVAOs;
+//}
 
 // redo: do useless work in copying arrays
 std::vector<unsigned int>* PhysicalSystem::buildFieldLinesFromEFieldVAOs(std::vector<std::vector<glm::vec3>*>* fieldLines)
@@ -553,7 +628,7 @@ std::vector<unsigned int>* PhysicalSystem::buildFieldLinesFromEFieldVAOs(std::ve
 	unsigned int fieldLinesVBO;
 	glGenBuffers(1, &fieldLinesVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, fieldLinesVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * lines.size(), lines.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * lines.size(), lines.data(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
@@ -646,14 +721,33 @@ void PhysicalSystem::drawCharges(std::vector<std::vector<glm::vec3>*>* chargeVer
 	}
 }
 
+//void PhysicalSystem::drawFieldLines(std::vector<std::vector<glm::vec3>*>* fieldLinesVerts, std::vector<unsigned int>* fieldLinesVAOs)
+//{
+//	//int x = 0;
+//	//std::cout << "NEXT VAO: " << std::endl;
+//	//for (int i = 0; i < fieldLinesVerts->size(); i++) {
+//	//	for (int j = 0; j < fieldLinesVerts->at(i)->size(); j++) {
+//	//		std::cout << "#" << x << ": " << glm::to_string(fieldLinesVerts->at(i)->at(j)) << std::endl;
+//	//		std::cout << "Count: " << x << std::endl;
+//	//		x++;
+//	//	}
+//	//}
+//
+//	//std::cout << "AS: " << fieldLinesVerts->at(0)->size() << std::endl;
+//
+//	for (int i = 0; i < fieldLinesVAOs->size(); i++) {
+//		glBindVertexArray(fieldLinesVAOs->at(i));
+//		glDrawArrays(GL_LINE_STRIP, 0, fieldLinesVerts->size());
+//	}
+//}
+
 void PhysicalSystem::drawFieldLines(std::vector<std::vector<glm::vec3>*>* fieldLinesVerts, std::vector<unsigned int>* fieldLinesVAOs)
 {
 	for (int i = 0; i < fieldLinesVerts->size(); i++) {
 		glBindVertexArray(fieldLinesVAOs->at(i));
-		glDrawArrays(GL_LINE_STRIP, 0, fieldLinesVerts->at(i)->size());
+		glDrawArrays(GL_LINE_STRIP, 0, fieldLinesVerts->at(i)->size() / 2);
 	}
 }
-
 
 void PhysicalSystem::drawFieldLinesFromEField(std::vector<std::vector<glm::vec3>*>* fieldLinesVerts, std::vector<unsigned int>* fieldLinesVAOs)
 {

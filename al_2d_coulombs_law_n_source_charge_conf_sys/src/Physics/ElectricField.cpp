@@ -71,11 +71,16 @@ int ElectricField::determineIndFromNDCY(float y) const
 
 glm::vec3 ElectricField::getColorValAtInd(int i, int j) const
 {
+	if (i < 0 || i > size || j < 0 || j > size) {
+		return glm::vec3(.0f, .0f, .0f);
+	}
 	return colorGrid[i][j];
 }
 
 glm::vec3 ElectricField::getColorValAtNDC(int i, int j) const
 {
+
+
 	return colorGrid[determineIndFromNDCX(i)][determineIndFromNDCY(j)];
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <random>
 #include <iostream>
 
 #include <GLFW/glfw3.h>
@@ -47,5 +48,7 @@ public:
 	static float EFieldLogMappingMag(float vMag, float vMagMin, float vMagMax);
 
 	static double log_base(double value, double base);
+
+	static glm::vec3 generateRandomColor();
 
 };

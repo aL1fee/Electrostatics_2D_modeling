@@ -157,6 +157,17 @@ void GUI::buildUpperPanel(PhysicalSystem* physicalSystem)
 
                 fieldLinesOnVecsOff = !fieldLinesOnVecsOff;
             }
+            extern bool colorOn;
+            if (ImGui::MenuItem("Toggle on/off the color mapping")) {
+                colorOn = !colorOn;
+            }
+            if (!colorOn) {
+                extern glm::vec3 default_color;
+                if (ImGui::MenuItem("Choose another random color")) {
+                    default_color = Helper::generateRandomColor();
+                }
+            }
+
             if (fieldLinesOnVecsOff == false) {
                 if (ImGui::BeginMenu("Field vector settings"))
                 {
@@ -207,6 +218,7 @@ void GUI::buildUpperPanel(PhysicalSystem* physicalSystem)
                     ImGui::EndMenu();
                 }
             }
+
             ImGui::EndMenu();
         }
 

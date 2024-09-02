@@ -18,15 +18,20 @@ bool testChargeCalcUnity = false;
 
 bool fieldlineSharpRejectionAngleOn = false;
 
-bool fieldLinesOnVecsOff = false;
+bool fieldLinesOnVecsOff = true;
 
 backgroundColor activeColor = GREY;
 
-int vertsFromEFieldDensityOfLines = 2;
+int vertsFromEFieldDensityOfLines = 9;
 float vectorLineLength = .009f;
 bool arrowsOn = true;
 
+bool colorOn = true;
+glm::vec3 default_color = glm::vec3(1.0f, .5f, .5f);
+
 int numberOfFieldlines = MIN_NUMBER_OF_LINES_PER_CHARGE;
+
+
 
 Renderer::Renderer(const string& filepath, GLFWwindow* w, GUI* g) : input(w)
 {
@@ -151,7 +156,7 @@ void Renderer::run() const
 
 	Shader chargeShader = Shader("res/shaders/shader_circle.shader", 0);
 	Shader fieldLineShader = Shader("res/shaders/shader_1_line.shader", 1);
-	Shader spaceShader = Shader("res/shaders/shader_space.shader", 1);
+	Shader spaceShader = Shader("res/shaders/shader_space.shader", 2);
 
 	MouseLoc cursorPos;
 	cursorPos.xPrev = 0;

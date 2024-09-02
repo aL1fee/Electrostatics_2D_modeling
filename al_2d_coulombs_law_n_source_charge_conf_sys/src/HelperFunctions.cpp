@@ -166,6 +166,18 @@ double Helper::log_base(double value, double base) {
 	return std::log(value) / std::log(base);
 }
 
+glm::vec3 Helper::generateRandomColor()
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distrib(0, 1);
+	float randomArray[3] = { 0.0f, 0.0f, 0.0f };
+	for (int i = 0; i < sizeof(randomArray) / sizeof(randomArray[0]); ++i) {
+		randomArray[i] = distrib(gen); 
+	}
+	return glm::vec3(randomArray[0], randomArray[1], randomArray[2]);
+}
+
 float Helper::EFieldLogMappingMag(float vMag, float vMagMin, float vMagMax)
 {
 	vMagMax = 10000;
