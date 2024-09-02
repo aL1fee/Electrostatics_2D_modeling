@@ -813,7 +813,7 @@ void PhysicalSystem::updateEColorGrid()
 	//std::cout << "MIN: " << minE << std::endl;
 
 
-	if (charges->size() != 0) {
+	if (charges->size() != 0) { 
 		for (int i = 0; i < efield->getSize(); i++) {
 			for (int j = 0; j < efield->getSize(); j++) {
 				Charge* closestCh = charges->at(0);
