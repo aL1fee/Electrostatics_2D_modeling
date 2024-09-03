@@ -182,46 +182,28 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 			//std::cout << "P: " << glm::to_string(pos) << std::endl;
 			glm::vec3 newV = efield->getValAtInd(i, j);
 			//std::cout << "newV: " << glm::to_string(glm::normalize(newV)) << std::endl;
-			fieldLine->push_back(pos);
-			//fieldLine->push_back(glm::vec3(.1f, .1f, .8f));
 			
-			if (colorOn) {
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
-			} else {
-				fieldLine->push_back(default_color);
-			}
-			//std::cout << "A1: " << glm::to_string(efield->getColorValAtInd(i, j)) << std::endl;
-
-			float vec_mag = length(newV);
-			float scaled_vec_mag = Helper::scaleVecMag(abs(vec_mag));
-			glm::vec3 newPos = pos + glm::normalize(newV) * vectorLineLength * scaled_vec_mag;
-			fieldLine->push_back(newPos);
-			if (colorOn) {
-				fieldLine->push_back(efield->getColorValAtInd(i, j));
-			} else {
-				fieldLine->push_back(default_color);
-			}
-			
-			if (arrowsOn) {
-				glm::vec3 arrowHeadLeft = -(newPos - pos);
-				glm::vec3 arrowHeadRight = -(newPos - pos);
-
-				glm::vec3 rotatedHeadLeft = glm::vec3(rotationMatrix1 * glm::vec4(arrowHeadLeft, 1.0f));
-				glm::vec3 rotatedHeadRight = glm::vec3(rotationMatrix2 * glm::vec4(arrowHeadRight, 1.0f));
-
-				fieldLine->push_back(newPos);
-				if (colorOn) {
-					fieldLine->push_back(efield->getColorValAtInd(i, j));
-				} else {
-					fieldLine->push_back(default_color);
+			bool withinRangeOfSinkCharge = false;
+			for (int c = 0; c < charges->size(); c++) {
+				glm::vec3 chPos = charges->at(c)->getPosition();
+				if (Helper::checkIfVecWithinRange(.07, pos, chPos) && charges->at(c)->getChrage() < 0) {
+					withinRangeOfSinkCharge = true;
 				}
-				fieldLine->push_back(newPos + glm::normalize(rotatedHeadLeft) / arrowHeadSize);
+			}
+
+			if (!withinRangeOfSinkCharge) {
+				fieldLine->push_back(pos);
 				if (colorOn) {
 					fieldLine->push_back(efield->getColorValAtInd(i, j));
 				}
 				else {
 					fieldLine->push_back(default_color);
 				}
+				//std::cout << "A1: " << glm::to_string(efield->getColorValAtInd(i, j)) << std::endl;
+
+				float vec_mag = length(newV);
+				float scaled_vec_mag = Helper::scaleVecMag(abs(vec_mag));
+				glm::vec3 newPos = pos + glm::normalize(newV) * vectorLineLength * scaled_vec_mag;
 				fieldLine->push_back(newPos);
 				if (colorOn) {
 					fieldLine->push_back(efield->getColorValAtInd(i, j));
@@ -229,20 +211,50 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 				else {
 					fieldLine->push_back(default_color);
 				}
-				fieldLine->push_back(newPos + glm::normalize(rotatedHeadRight) / arrowHeadSize);
-				if (colorOn) {
-					fieldLine->push_back(efield->getColorValAtInd(i, j));
+
+				if (arrowsOn) {
+					glm::vec3 arrowHeadLeft = -(newPos - pos);
+					glm::vec3 arrowHeadRight = -(newPos - pos);
+
+					glm::vec3 rotatedHeadLeft = glm::vec3(rotationMatrix1 * glm::vec4(arrowHeadLeft, 1.0f));
+					glm::vec3 rotatedHeadRight = glm::vec3(rotationMatrix2 * glm::vec4(arrowHeadRight, 1.0f));
+
+					fieldLine->push_back(newPos);
+					if (colorOn) {
+						fieldLine->push_back(efield->getColorValAtInd(i, j));
+					}
+					else {
+						fieldLine->push_back(default_color);
+					}
+					fieldLine->push_back(newPos + glm::normalize(rotatedHeadLeft) / arrowHeadSize);
+					if (colorOn) {
+						fieldLine->push_back(efield->getColorValAtInd(i, j));
+					}
+					else {
+						fieldLine->push_back(default_color);
+					}
+					fieldLine->push_back(newPos);
+					if (colorOn) {
+						fieldLine->push_back(efield->getColorValAtInd(i, j));
+					}
+					else {
+						fieldLine->push_back(default_color);
+					}
+					fieldLine->push_back(newPos + glm::normalize(rotatedHeadRight) / arrowHeadSize);
+					if (colorOn) {
+						fieldLine->push_back(efield->getColorValAtInd(i, j));
+					}
+					else {
+						fieldLine->push_back(default_color);
+					}
 				}
-				else {
-					fieldLine->push_back(default_color);
-				}
+
+
+
+				//fieldLine->push_back(efield->getColorValAtNDC(newPos.x, newPos.y));
+				//std::cout << "A2: " << glm::to_string(efield->getColorValAtNDC(newPos.x, newPos.y)) << std::endl;
+				ret->push_back(fieldLine);
 			}
-
-
-
-			//fieldLine->push_back(efield->getColorValAtNDC(newPos.x, newPos.y));
-			//std::cout << "A2: " << glm::to_string(efield->getColorValAtNDC(newPos.x, newPos.y)) << std::endl;
-			ret->push_back(fieldLine);
 		}
 	}
 	//std::cout << "MAX: " << MAX_E_F << std::endl;

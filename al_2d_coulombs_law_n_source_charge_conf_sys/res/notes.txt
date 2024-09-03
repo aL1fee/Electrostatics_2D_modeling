@@ -667,7 +667,8 @@ position.
 • Euler Angles: defined as yaw, pitch and roll that allow us to form any 3D direction
 vector from these 3 values
 
-
+GL_TRIANGLE_FAN is a drawing mode in OpenGL that allows you to create a series of connected triangles 
+sharing a common central vertex. This mode is particularly useful for drawing shapes like filled circles, polygons, and fans.
 
 
 
