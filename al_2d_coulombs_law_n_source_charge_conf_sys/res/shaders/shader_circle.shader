@@ -3,9 +3,11 @@
 
 layout (location = 0) in vec3 pos;
 
+uniform mat4 projection;
+
 void main()
 {
-	gl_Position = vec4(pos.x, pos.y, pos.z, 1.0f);
+	gl_Position = projection * vec4(pos, 1.0f);
 }
 
 #shader fragment
@@ -15,5 +17,5 @@ out vec4 FragColor;
 
 void main()
 {
-	FragColor = vec4(.2f, .75f, .136f, 1.0f);
+	FragColor = vec4(.75f, .75f, .136f, 1.0f);
 }

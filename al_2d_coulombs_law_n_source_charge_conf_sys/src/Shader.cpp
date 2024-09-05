@@ -114,8 +114,9 @@ unsigned int Shader::getUniformLocation(const string& name)
 	if (_UniformLocationCache.find(name) != _UniformLocationCache.end())
 		return _UniformLocationCache[name];
 	int location = glGetUniformLocation(_RendererID, name.c_str());
-	if (location == -1)
+	if (location == -1) {
 		cout << "Warning: uniform '" << name << "' doesn't exist!" << endl;
+	}
 	_UniformLocationCache[name] = location;
 	return location;
 }

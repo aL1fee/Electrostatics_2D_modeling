@@ -2,7 +2,7 @@
 
 int testNumClicks = 0;
 int testNumOfLinesSegments = 0;
-int testExecTimeInterval = 50;
+int testExecTimeInterval = 150;
 long testExecTimeCount = 0;
 
 bool firstMouse = true;
@@ -128,8 +128,9 @@ void Renderer::run() const
 {
 	PhysicalSystem* physicalSystem = new PhysicalSystem(RELATIVE_PERMITTIVITY);
 
-	Charge* ch1 = new Charge(.015f, 16, glm::vec3(-.5f, 0.0f, .0f), -3);
-	Charge* ch2 = new Charge(.015f, 16, glm::vec3(0.5f, 0.0f, .0f),  3);
+	Charge* ch1 = new Charge(.015f, 32, glm::vec3(.2f, .2f, .0f), 3);
+	//Charge* ch1 = new Charge(.012f, 16, glm::vec3(-.5f, 0.0f, .0f), -3);
+	//Charge* ch2 = new Charge(.012f, 16, glm::vec3(0.5f, 0.0f, .0f),  3);
 	//Charge* ch3 = new Charge(.12f, 32, glm::vec3(0.0f, 0.5f, .0f), 4);
 	//Charge* ch4 = new Charge(.15f, 4, glm::vec3(0.1f, 0.1f, .0f), -5);
 	//Charge* ch5 = new Charge(.03f, 32, glm::vec3(-.2f, 0.3f, .0f), 1);
@@ -141,8 +142,12 @@ void Renderer::run() const
 	//Charge* ch11 = new Charge(.06f, 4, glm::vec3(0.3f, -0.1f, .0f), -2);
 	//Charge* ch12 = new Charge(.24f, 32, glm::vec3(-1.0f, -1.0f, .0f), 8);
 
+
+	
+	
+
 	physicalSystem->addCharge(ch1);
-	physicalSystem->addCharge(ch2);
+	//physicalSystem->addCharge(ch2);
 	//physicalSystem->addCharge(ch3);
 	//physicalSystem->addCharge(ch4);
 	//physicalSystem->addCharge(ch5);
@@ -176,8 +181,37 @@ void Renderer::run() const
 	cursorPos.isClicked = GL_FALSE;
 
 
+
+
+	GLfloat matrix[16] = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+
+	//physicalSystem->updateElectricField();
+	//physicalSystem->printEfield();
+ 
+
+	float left = -1.0f * ASPECT_RATIO;
+	float right = 1.0f * ASPECT_RATIO;
+	float top = 1.0f;
+	float bottom = -1.0f;
+	glm::mat4 projection = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
+	unsigned int projectionChargeLoc = chargeShader.getUniformLocation("projection");
+	unsigned int projectionFieldLineLoc = fieldLineShader.getUniformLocation("projection");
+	unsigned int projectionSpaceLoc = spaceShader.getUniformLocation("projection");
+
+
 	while (!glfwWindowShouldClose(window)) {
-		
+		//???????
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		//???????
+
+
+
 		//glfwPollEvents();
 		gui->newFrame(physicalSystem);
 
@@ -197,9 +231,14 @@ void Renderer::run() const
 		std::vector<std::vector<glm::vec3>*>* chargeVerts = physicalSystem->buildChargeVerts();
 		std::vector<unsigned int>* chargeVAOs = physicalSystem->buildChargeVAOs(chargeVerts);
 		chargeShader.bind();
+
+		glUniformMatrix4fv(projectionChargeLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 		physicalSystem->drawCharges(chargeVerts, chargeVAOs);
 		physicalSystem->freeChargeVerts(chargeVerts);
 		physicalSystem->freeChargeVAOs(chargeVAOs);
+
+
 
 
 		//std::vector<std::vector<glm::vec3>*>* fieldLinesVerts = physicalSystem->buildFieldLinesVerts(SEGMENT_LENGTH);
@@ -220,6 +259,7 @@ void Renderer::run() const
 		}
 
 		fieldLineShader.bind();
+		glUniformMatrix4fv(projectionFieldLineLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		if (fieldLinesOnVecsOff) {
 			physicalSystem->drawFieldLines(fieldLinesVerts, fieldLinesVAOs);
@@ -231,7 +271,10 @@ void Renderer::run() const
 
 		std::vector<std::vector<glm::vec3>*>* spaceVerts = physicalSystem->buildSpaceVerts();
 		std::vector<unsigned int>* spaceVAOs = physicalSystem->buildSpaceVAOs(spaceVerts);
+
 		spaceShader.bind();
+		glUniformMatrix4fv(projectionSpaceLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 		physicalSystem->drawSpaces(spaceVerts, spaceVAOs);
 		////physicalSystem->freeSpaceVerts(chargeVerts);
 		physicalSystem->freeSpaceVAOs(spaceVAOs);

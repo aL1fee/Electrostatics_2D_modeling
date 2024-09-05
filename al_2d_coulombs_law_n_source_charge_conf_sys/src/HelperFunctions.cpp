@@ -85,7 +85,7 @@ float Helper::convertWindowToNDCX(GLFWwindow* window, float x)
 
 	//std::cout << "x2: " << middleX / halfWidth << std::endl;
 
-	return middleX / halfWidth;
+	return ASPECT_RATIO * (middleX / halfWidth);
 	
 }
 
@@ -122,43 +122,55 @@ float Helper::scaleVecMag(float vMag)
 		return 0.9f;
 	}
 	if ((vMag > 15) && (vMag < 25)) {
-		return 1.2f;
+		return 1.3f;
 	}
 	if ((vMag > 25) && (vMag < 60)) {
-		return 1.8f;
+		return 2.0f;
 	}
 	if ((vMag > 60) && (vMag < 120)) {
-		return 2.4f;
+		return 2.7f;
 	}
 	if ((vMag > 120) && (vMag < 250)) {
-		return 3.1f;
+		return 3.4f;
 	}
 	if ((vMag > 250) && (vMag < 600)) {
-		return 3.7f;
+		return 4.1f;
 	}
 	if ((vMag > 600) && (vMag < 1000)) {
-		return 4.3f;
+		return 4.7f;
 	}
 	if ((vMag > 1000) && (vMag < 2500)) {
-		return 5.1f;
+		return 5.3f;
 	}
 	if ((vMag > 2500) && (vMag < 6000)) {
 		return 5.9f;
 	}
 	if ((vMag > 6000) && (vMag < 10000)) {
-		return 6.5f;
+		return 6.4f;
 	}
-	if ((vMag > 10000) && (vMag < 25000)) {
-		return 7.3f;
+	if ((vMag > 10000) && (vMag < 15000)) {
+		return 6.8f;
 	}
-	if ((vMag > 25000) && (vMag < 55000)) {
-		return 8.1f;
+	if ((vMag > 15000) && (vMag < 20000)) {
+		return 7.1f;
+	}
+	if ((vMag > 20000) && (vMag < 25000)) {
+		return 7.4f;
+	}
+	if ((vMag > 25000) && (vMag < 30000)) {
+		return 7.7f;
+	}
+	if ((vMag > 30000) && (vMag < 40000)) {
+		return 8.0f;
+	}
+	if ((vMag > 40000) && (vMag < 55000)) {
+		return 8.5f;
 	}
 	if ((vMag > 55000) && (vMag < 100000)) {
-		return 9.5f;
+		return 9.2f;
 	} 
 	else {
-		return 10.5f;
+		return 10.3f;
 	}
 }
 
@@ -176,6 +188,17 @@ glm::vec3 Helper::generateRandomColor()
 		randomArray[i] = distrib(gen); 
 	}
 	return glm::vec3(randomArray[0], randomArray[1], randomArray[2]);
+}
+
+void Helper::printMatrix(const glm::mat4& matrix)
+{
+	const float* pSource = (const float*)glm::value_ptr(matrix);
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			std::cout << pSource[j * 4 + i] << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 float Helper::EFieldLogMappingMag(float vMag, float vMagMin, float vMagMax)

@@ -8,6 +8,10 @@
 #include <glm.hpp>
 #include <Windows.h>
 
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+#include <gtx/string_cast.hpp>
+
 #include "vendor/imgui/imgui.h"
 #include "vendor/imgui/imgui_impl_glfw.h"
 
@@ -50,5 +54,7 @@ public:
 	static double log_base(double value, double base);
 
 	static glm::vec3 generateRandomColor();
+
+	static void printMatrix(const glm::mat4& matrix);
 
 };

@@ -127,10 +127,14 @@ void mouse_cursor_callback(GLFWwindow* window, double xpos, double ypos)
 	if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)) 
 	{
 		if (mouseDragOldState == GLFW_RELEASE) {
+
+
 			mouse(window, GL_FALSE, GL_TRUE, xpos, ypos);
 			mouseDragOldState = GLFW_PRESS;
 			dataPtr->xPrev = Helper::convertWindowToNDCX(window, xpos);
 			dataPtr->yPrev = Helper::convertWindowToNDCY(window, ypos);
+
+			std::cout << "A: " << Helper::convertWindowToNDCX(window, xpos) << ", B: " << Helper::convertWindowToNDCY(window, ypos) << std::endl;
 		}
 		else {
 			mouse(window, dataPtr->isActive, GL_FALSE, xpos, ypos);

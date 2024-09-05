@@ -66,12 +66,12 @@ void PhysicalSystem::generateRandomConfiguration()
 		if (randomCharge == 0) {
 			randomCharge = -3;
 		}
-		std::cout << "A: " << randomCharge << std::endl;
+		//std::cout << "A: " << randomCharge << std::endl;
 		float randomValue1 = distrib2(gen2);
 		float randomValue2 = distrib2(gen2);
 		glm::vec3 v = glm::vec3(randomValue1, randomValue2, 0.0f);
 		std::cout << to_string(v) << std::endl;
-		Charge* ch = new Charge(.015, 32, v, randomCharge);
+		Charge* ch = new Charge(.012, 32, v, randomCharge);
 		addCharge(ch);
 	}
 	
@@ -115,22 +115,24 @@ void PhysicalSystem::updateElectricField()
 {
 	float permittiviy_0 = PERMITTIVITY_OF_FREE_SPACE;
 
-	for (int i = 0; i < efield->getSize(); i++) {
-		for (int j = 0; j < efield->getSize(); j++) {
+	for (int i = 0; i < efield->getSizeRows(); i++) {
+		for (int j = 0; j < efield->getSizeCols(); j++) {
 			glm::vec3 resultVector = glm::vec3(.0f);
 			for (int c = 0; c < charges->size(); c++) {
 				// test charge is always positive
 				Charge* ch = charges->at(c);
 				int chQ = ch->getChrage();
-				glm::vec3 posV = (glm::vec3(efield->determineNDCX(i), efield->determineNDCY(j), Z_2D_COORD) - ch->getPosition());
+				glm::vec3 posV = (glm::vec3(efield->determineNDCX(j), efield->determineNDCY(i), Z_2D_COORD) - ch->getPosition());
 				float pos_sq_mag = pow(Helper::vec3DistanceXY(posV), 2);
 				glm::vec3 normV = glm::normalize(posV);
 				resultVector += (float)chQ / pos_sq_mag * normV;
 			}
-
 			resultVector *= 1.0f / (4 * M_PI * permittiviy_0 * relative_permittivity) / VOLTS_TO_GVOLTS_PER_METER_CONV_CONST;
 
-
+			//if (j > 115) {
+			//	//std::cout << "J: " << j << std::endl;
+			//	std::cout << "j > 100: " << glm::to_string(resultVector) << std::endl;
+			//}
 			efield->setVal(i, j, resultVector);
 		}
 	}
@@ -140,7 +142,7 @@ glm::vec3 PhysicalSystem::getElectricFieldAtNDC(float i, float j) const
 {
 	//std::cout << "i: " << i << std::endl;
 	//std::cout << "j: " << j << std::endl;
-	return efield->getValAtInd(efield->determineIndFromNDCX(i), efield->determineIndFromNDCY(j));
+	return efield->getValAtInd(efield->determineIndFromNDCY(i), efield->determineIndFromNDCX(j));
 }
 
 std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEField(float segmentLength)
@@ -164,12 +166,12 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 
 
 	int  lineDensityCorr = 11 - vertsFromEFieldDensityOfLines;
-	for (int i = 0; i < efield->getSize(); i+= lineDensityCorr) {
-		for (int j = 0; j < efield->getSize(); j+= lineDensityCorr) {
+	for (int i = 0; i < efield->getSizeRows(); i+= lineDensityCorr) {
+		for (int j = 0; j < efield->getSizeCols(); j+= lineDensityCorr) {
 			bool chargeAtLineOrigin = false;
 			for (int c = 0; c < charges->size(); c++) {
 				float newDist = Helper::vec3DistanceXY(charges->at(c)->getPosition() -
-					glm::vec3(efield->determineNDCX(i), efield->determineNDCY(j), Z_2D_COORD));
+					glm::vec3(efield->determineNDCX(j), efield->determineNDCY(i), Z_2D_COORD));
 				if (newDist < CHARGE_AT_VECTOR_ORIGIN_REJECTION_VAL) {
 					chargeAtLineOrigin = true;
 				}
@@ -178,7 +180,7 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 				continue;
 			}
 			std::vector<glm::vec3>* fieldLine = new std::vector<glm::vec3>;
-			glm::vec3 pos = glm::vec3(efield->determineNDCX(i), efield->determineNDCY(j), Z_2D_COORD);
+			glm::vec3 pos = glm::vec3(efield->determineNDCX(j), efield->determineNDCY(i), Z_2D_COORD);
 			//std::cout << "P: " << glm::to_string(pos) << std::endl;
 			glm::vec3 newV = efield->getValAtInd(i, j);
 			//std::cout << "newV: " << glm::to_string(glm::normalize(newV)) << std::endl;
@@ -330,13 +332,17 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVertsFromEF
 //}
 
 
-
-void PhysicalSystem::clearSystem()
-{
+void PhysicalSystem::deleteAllCharges() {
 	for (int i = 0; i < charges->size(); i++) {
 		delete charges->at(i);
 	}
 	charges->clear();
+}
+
+void PhysicalSystem::clearSystem()
+{
+	deleteAllCharges();
+	deleteAllSpaces();
 }
 
 Charge* PhysicalSystem::getClosestChargeToLoc(glm::vec3 v)
@@ -434,8 +440,10 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 			std::vector<glm::vec3>* fieldLine = new std::vector<glm::vec3>;
 			fieldLine->push_back(glm::vec3(currentCh->getPosition().x, currentCh->getPosition().y, currentCh->getPosition().z));
 			if (colorOn) {
-				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(currentCh->getPosition().x),
-					efield->determineIndFromNDCY(currentCh->getPosition().y)));
+				//std::cout << "ASDAS: " << efield->determineIndFromNDCX(currentCh->getPosition().x) << 
+				//	",  SA: " << efield->determineIndFromNDCY(currentCh->getPosition().y) << std::endl;
+				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCY(currentCh->getPosition().y),
+					efield->determineIndFromNDCX(currentCh->getPosition().x)));
 			} else {
 				fieldLine->push_back(default_color);
 			}
@@ -472,7 +480,7 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 
 			fieldLine->push_back(segment);
 			if (colorOn) {
-				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(segment.x), efield->determineIndFromNDCY(segment.y)));
+				fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCY(segment.y), efield->determineIndFromNDCX(segment.x)));
 			} else {
 				fieldLine->push_back(default_color);
 			}
@@ -539,7 +547,7 @@ std::vector<std::vector<glm::vec3>*>* PhysicalSystem::buildFieldLinesVerts(float
 
 				fieldLine->push_back(segment);
 				if (colorOn) {
-					fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCX(segment.x), efield->determineIndFromNDCY(segment.y)));
+					fieldLine->push_back(efield->getColorValAtInd(efield->determineIndFromNDCY(segment.y), efield->determineIndFromNDCX(segment.x)));
 				} else {
 					fieldLine->push_back(default_color);
 				}
@@ -683,10 +691,23 @@ void PhysicalSystem::freeFieldLinesVAOs(std::vector<unsigned int>* fieldLinesVAO
 
 void PhysicalSystem::checkChargesForMovement(MouseLoc* cursorPos) const
 {
+	//std::cout << "A: " << Helper::convertWindowToNDCX(window, xpos) << ", B: " << Helper::convertWindowToNDCY(window, ypos) << std::endl;
 
 	if (!cursorPos->isActive && cursorPos->isClicked) {
 
-		std::cout << "A: " << glm::to_string(getElectricFieldAtNDC(cursorPos->x, cursorPos->y)) << std::endl;
+		//std::cout << "A: " << efield->determineIndFromNDCX(cursorPos->x) << ", B: " << efield->determineIndFromNDCY(cursorPos->y) << std::endl;
+		//std::cout << "NDCX: " << efield->determineNDCX(efield->determineIndFromNDCX(cursorPos->x)) << ", NDCY: " <<
+		//	efield->determineNDCY(efield->determineIndFromNDCY(cursorPos->y))  << std::endl;
+		//std::cout << "NDCX: " << efield->determineNDCX(efield->determineIndFromNDCX(cursorPos->x)) << ", NDCY: " <<
+		//	efield->determineNDCY(efield->determineIndFromNDCY(cursorPos->y))  << std::endl;
+		//std::cout << "A: " << efield->determineIndFromNDCX(cursorPos->x) << ", B: " << efield->determineIndFromNDCY(cursorPos->y) << std::endl;
+		//std::cout << "NDCX: " << efield->determineNDCX(efield->determineIndFromNDCX(cursorPos->x)) << std::endl;
+		//std::cout << "NDCY: " << efield->determineNDCX(efield->determineIndFromNDCY(cursorPos->y)) << std::endl;
+		//std::cout << "Efield at NDC: " << glm::to_string(getElectricFieldAtNDC(cursorPos->y, cursorPos->x)) << std::endl;
+
+		//std::cout << "Cursor X: " << cursorPos->x << std::endl;
+		//std::cout << "Cursor Y: " << cursorPos->y << std::endl;
+
 
 		for (int i = 0; i < charges->size(); i++) {
 			glm::vec3 temp = charges->at(i)->getPosition();
@@ -729,9 +750,17 @@ void PhysicalSystem::drawCharges(std::vector<std::vector<glm::vec3>*>* chargeVer
 {
 	for (int i = 0; i < chargeVerts->size(); i++) {
 		glBindVertexArray(chargeVAOs->at(i));
-		glDrawArrays(GL_LINE_STRIP, 0, chargeVerts->at(i)->size());
+		glDrawArrays(GL_TRIANGLE_FAN, 0, chargeVerts->at(i)->size());
 	}
 }
+
+//void PhysicalSystem::drawCharges(std::vector<std::vector<glm::vec3>*>* chargeVerts, std::vector<unsigned int>* chargeVAOs)
+//{
+//	for (int i = 0; i < chargeVerts->size(); i++) {
+//		glBindVertexArray(chargeVAOs->at(i));
+//		glDrawArrays(GL_LINE_STRIP, 0, chargeVerts->at(i)->size());
+//	}
+//}
 
 //void PhysicalSystem::drawFieldLines(std::vector<std::vector<glm::vec3>*>* fieldLinesVerts, std::vector<unsigned int>* fieldLinesVAOs)
 //{
@@ -885,13 +914,10 @@ void PhysicalSystem::freeSpaceVAOs(std::vector<unsigned int>* spaceVAOs)
 void PhysicalSystem::deleteAllSpaces()
 {
 	for (int i = 0; i < spaces->size(); i++) {
-		std::cout << "spaces size " << spaces->size() << std::endl;
-		std::cout << "zzzzz" << spaces->size() << std::endl;
 		spaces->at(i)->freeSpace();
 		delete spaces->at(i);
 	}
 	spaces->clear();
-	std::cout << "A: " << spaces->size() << std::endl;
 }
 
 void PhysicalSystem::updateEColorGrid()
@@ -902,8 +928,8 @@ void PhysicalSystem::updateEColorGrid()
 	float maxE = -100.0f;
 	float minE = 10000.0f;
 
-	for (int i = 0; i < efield->getSize(); i++) {
-		for (int j = 0; j < efield->getSize(); j++) {
+	for (int i = 0; i < efield->getSizeRows(); i++) {
+		for (int j = 0; j < efield->getSizeCols(); j++) {
 			float eFieldMag = (glm::length(efield->getValAtInd(i, j)));
 			if (eFieldMag < minE) {
 				minE = eFieldMag;
@@ -920,8 +946,8 @@ void PhysicalSystem::updateEColorGrid()
 
 
 	if (charges->size() != 0) { 
-		for (int i = 0; i < efield->getSize(); i++) {
-			for (int j = 0; j < efield->getSize(); j++) {
+		for (int i = 0; i < efield->getSizeRows(); i++) {
+			for (int j = 0; j < efield->getSizeCols(); j++) {
 				Charge* closestCh = charges->at(0);
 				float minDistToClosestCh = 100.0f;
 				float totalEfieldMag = Helper::vec3DistanceXY(efield->getValAtInd(i, j));
@@ -929,7 +955,7 @@ void PhysicalSystem::updateEColorGrid()
 				for (int c = 0; c < charges->size(); c++) {
 					Charge* ch = charges->at(c);
 					int chQ = ch->getChrage();
-					glm::vec3 posV = (glm::vec3(efield->determineNDCX(i), efield->determineNDCY(j), Z_2D_COORD) - ch->getPosition());
+					glm::vec3 posV = (glm::vec3(efield->determineNDCX(j), efield->determineNDCY(i), Z_2D_COORD) - ch->getPosition());
 					float pos_sq_mag = pow(Helper::vec3DistanceXY(posV), 2);
 					glm::vec3 normV = glm::normalize(posV);
 					glm::vec3 fieldDueToC = (float)chQ / pos_sq_mag * normV * 1.0f 
@@ -970,6 +996,15 @@ void PhysicalSystem::updateEColorGrid()
 				//	efield->setColorVal(i, j, glm::vec3(1.0f - eFieldNormMag, 0.0f, eFieldNormMag));
 				//}
 			}
+		}
+	}
+}
+
+void PhysicalSystem::printEfield()
+{
+	for (int i = 0; i < efield->getSizeRows(); i += 8) {
+		for (int j = 0; j < efield->getSizeRows(); j += 2) {
+			std::cout << "row #" << i << ", col # " << j << ": " << glm::to_string(efield->getValAtInd(i, j)) << std::endl;
 		}
 	}
 }

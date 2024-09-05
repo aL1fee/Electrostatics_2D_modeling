@@ -229,14 +229,17 @@ void GUI::buildUpperPanel(PhysicalSystem* physicalSystem)
         if (ImGui::BeginMenu("Tools"))
         {
             if (ImGui::MenuItem("Add charge", "")) {
-                Charge* ch = new Charge(.015f, 32, glm::vec3(-.5f, 0.2f, .0f), 2);
+                Charge* ch = new Charge(.012f, 32, glm::vec3(0.0f, 0.0f, 0.0f), -3);
                 physicalSystem->addCharge(ch);
             }
             if (ImGui::MenuItem("Add a space", "")) {
 
             }
             if (ImGui::MenuItem("Add a dipole", "")) {
-
+                Charge* ch1 = new Charge(.012f, 32, glm::vec3(-0.4f, 0.0f, 0.0f), -3);
+                Charge* ch2 = new Charge(.012f, 32, glm::vec3(0.4f, 0.0f, 0.0f), 3);
+                physicalSystem->addCharge(ch1);
+                physicalSystem->addCharge(ch2);
             }
             if (ImGui::MenuItem("Add a capacitor", "")) {
 

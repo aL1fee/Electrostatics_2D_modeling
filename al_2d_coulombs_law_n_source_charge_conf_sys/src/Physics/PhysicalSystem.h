@@ -99,4 +99,7 @@ public:
 
 	void updateEColorGrid();
 
+	void printEfield();
+
+	void deleteAllCharges();
 };

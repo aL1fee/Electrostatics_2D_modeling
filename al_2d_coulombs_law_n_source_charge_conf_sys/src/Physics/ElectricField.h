@@ -19,17 +19,18 @@
 class ElectricField
 {
 private:
-	enum electricFieldGridValues {
-		res_32 = 32,
-		res_64 = 64,
-		res_128 = 128,
-		res_256 = 256
-	};
+	//enum electricFieldGridValues {
+	//	res_32 = 32,
+	//	res_64 = 64,
+	//	res_128 = 128,
+	//	res_256 = 256
+	//};
 
-	glm::vec3 electricFieldGrid[electricFieldGridValues::res_128][electricFieldGridValues::res_128];
-	glm::vec3 colorGrid[electricFieldGridValues::res_128][electricFieldGridValues::res_128];
+	glm::vec3 electricFieldGrid[FIELD_VECTOR_GRID_AR_CORR_ROWS][FIELD_VECTOR_GRID_AR_CORR_COLS];
+	glm::vec3 colorGrid[FIELD_VECTOR_GRID_AR_CORR_ROWS][FIELD_VECTOR_GRID_AR_CORR_COLS];
 
-	int size;
+	int size_AR_corr_Cols;
+	int size_AR_corr_Rows;
 
 	void initializeElectricFieldGrid();
 	void initializeColorGrid();
@@ -42,7 +43,8 @@ public:
 	glm::vec3 getValAtNDC(int i, int j) const;
 
 	void setVal(int i, int j, glm::vec3 v);
-	int getSize();
+	int getSizeRows();
+	int getSizeCols();
 
 	float determineNDCX(int i) const;
 	float determineNDCY(int j) const;
